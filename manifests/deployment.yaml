@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: springdemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: springdemo
+  template:
+    metadata:
+      labels:
+        app: springdemo
+    spec:
+      containers:
+        - name: springdemo
+          image: acr16480.azurecr.io/springdemo
+          ports:
+          - containerPort: 8080
