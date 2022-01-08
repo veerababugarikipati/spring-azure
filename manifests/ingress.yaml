@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name:  springdemo-ingress
+spec:
+  rules:
+  - host: "reg.20.81.78.25.nip.io"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: springdemo
+            port:
+              number: 80
