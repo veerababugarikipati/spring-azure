@@ -1,0 +1,87 @@
+trigger:
+- master
+
+variables:
+  imageRepository: 'demo'
+  dockerRegistryServiceConnection: 'acr3939'
+  dockerfilePath: 'Dockerfile'
+  tag: '$(Build.SourceVersion)'
+  imageName: 'demo'
+  clusterName: 'aksworkshop-24553'
+  namespace: 'default'
+  imagePullSecret: 'demo-pull-secret'
+  containerRegistry: 'acr16480.azurecr.io'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build
+  jobs:
+  - job: Build
+    steps: 
+      - task: Gradle@3
+        inputs:
+          gradleWrapperFile: 'gradlew'
+          options: '--debug'
+          tasks: 'build'
+          publishJUnitResults: false
+          testResultsFiles: '**/TEST-*.xml'
+          javaHomeOption: 'JDKVersion'
+          sonarQubeRunAnalysis: false
+          spotBugsAnalysis: false
+      - task: Docker@2
+        displayName: Build
+        inputs:
+          command: buildAndPush
+          repository: $(imageRepository)
+          dockerfile: $(dockerfilePath)
+          containerRegistry: $(dockerRegistryServiceConnection)
+          tags: |
+            $(tag)
+      - task: PublishPipelineArtifact@1
+        inputs:
+          artifactName: 'manifests'
+          path: 'manifests'
+
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy job
+    environment: $(clusterName)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: 'manifests'
+              downloadPath: '$(System.ArtifactsDirectory)/manifests'
+
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              namespace: $(namespace)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+              kubernetesServiceConnection: aks3939
+
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster
+            inputs:
+              action: deploy
+              namespace: $(namespace)
+              manifests: |
+                $(System.ArtifactsDirectory)/manifests/deployment.yaml
+                $(System.ArtifactsDirectory)/manifests/service.yaml
+                $(System.ArtifactsDirectory)/manifests/ingress.yaml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(Build.SourceVersion)
+              kubernetesServiceConnection: aks3939
