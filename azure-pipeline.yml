@@ -2,14 +2,14 @@ trigger:
 - master
 
 variables:
-  imageRepository: 'demo'
+  imageRepository: 'springdemo'
   dockerRegistryServiceConnection: 'acr3939'
   dockerfilePath: 'Dockerfile'
   tag: '$(Build.SourceVersion)'
-  imageName: 'demo'
+  imageName: 'springdemo'
   clusterName: 'aksworkshop-24553'
   namespace: 'default'
-  imagePullSecret: 'demo-pull-secret'
+  imagePullSecret: 'springdemo-pull-secret'
   containerRegistry: 'acr16480.azurecr.io'
 
 pool:
