@@ -23,7 +23,7 @@ stages:
     steps: 
       - task: Gradle@3
         inputs:
-          gradleWrapperFile: 'gradlew'
+          gradleWrapperFile: '$(system.defaultWorkingDirectory)/gradlew'
           workingDirectory: ''
           tasks: 'build'
           publishJUnitResults: false
