@@ -3,14 +3,12 @@ trigger:
 pool: 
  vmImage: ubuntu-latest 
    
-jobs:
-  - job: 
-    steps:     
-    - task: Gradle@3
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'build'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
+steps:
+- task: Gradle@3
+  inputs:
+    gradleWrapperFile: 'gradlew'
+    tasks: 'build'
+    publishJUnitResults: false
+    javaHomeOption: 'JDKVersion'
+    sonarQubeRunAnalysis: false
+    spotBugsAnalysis: false
